@@ -1,0 +1,134 @@
+---
+title: "Assignment7"
+format: html
+editor: Jasmine Ehlert
+---
+
+## Assignment 7: Part 1
+
+### Question 1
+
+
+```{r}
+library(units)
+library(lidR)
+library(terra)
+library(mapview)
+
+las<-readLAS("Jasmine Ehlert.las")
+las
+
+View(las@data)
+summary(las$Z)
+
+```
+
+a. There are 2.24million points in this file. This and other information can be seen by running the "las" line above.
+
+b. The highest elevation in this point cloud is 1392m, it can be seen by running 'summary(las\$Z)' and observing the Max. output
+
+### Question 2
+
+```{r}
+library(RCSF)
+
+#2a
+las_CSF <- classify_ground(las, algorithm = csf())
+dem <- rasterize_terrain(las_CSF, algorithm = tin())
+plot(dem)
+
+#2b
+las_PMF<- classify_ground(las, algorithm=pmf(ws=5, th=3))
+dem1<- rasterize_terrain(las_PMF, algorithim=tin())
+plot(dem1)
+
+#2c
+dem2<-rasterize_terrain(las_CSF, algorithm = knnidw())
+plot(dem2)
+
+
+```
+
+2d.
+
+The PMF algorithm works by filtering out similar points based on a provided threshold. The threshold is set by the user.
+
+### Question 3
+
+```{r}
+#3a
+nlasa<-normalize_height(las_CSF, knnidw())
+chma<-rasterize_canopy(nlasa, algorithm=p2r())
+plot(chma)
+
+#3b
+nlasb<-normalize_height(las_CSF, tin())
+chmb<-rasterize_canopy(nlasb, algorithm=dsmtin())
+plot(chmb)
+
+#3c
+chmc<-rasterize_canopy(nlasb, algorithm=p2r())
+plot(chmc)
+
+```
+
+3d. The Inverse distance weighting algorithm works by estimating values of unsampled regions based on the average values surrounding it. The number of values used to calculate the average can be input by the user.
+
+### Question 4
+
+```{r}
+#4a
+ttops<-locate_trees(chmc, lmf(5))
+mapview(ttops)
+
+las_dalponte<-segment_trees(nlasb, dalponte2016(chmc, ttops))
+plot(las_dalponte, color="treeID")
+
+#4b
+
+las_li<-segment_trees(nlasb, li2012())
+plot(las)
+
+#4c
+my_silva<-silva2016(chmc, ttops)
+las_silva <- segment_trees(nlasb, algorithm = my_silva)
+plot(las_silva)
+```
+
+4d. The silva algorithm segments trees based on seed and voronoi tesselation. Meaning the tree tops act as seeds for a region. The outline for each region is equidistance to the two nearest seeds.
+
+### Question 5
+
+```{r}
+#5a
+install_unit("stems")
+
+
+metricsA<- crown_metrics(las_dalponte, .stdtreemetrics)
+n_tree_a<- set_units(nrow(metricsA), "stems")
+st_area(las_dalponte)
+ha_area_a <- set_units(st_area(las_dalponte), "ha")
+round(n_tree_a/ha_area_a)
+# 297 stem/ha
+
+
+#5b
+metricsB<-crown_metrics(las_li, .stdtreemetrics)
+n_tree_b <- set_units(nrow(metricsB), "stems")
+ha_area_b<-set_units(st_area(las_li), "ha")
+round(n_tree_b/ha_area_b)
+# 591 stems/ha
+
+#5c
+metricsC<-crown_metrics(las_silva, .stdtreemetrics)
+n_tree_c<- set_units(nrow(metricsC), "stems")
+ha_area_c<- set_units(st_area(las_silva), "ha")
+round(n_tree_c/ha_area_c)
+# 297 stems/ha
+
+
+
+
+```
+
+
