@@ -87,12 +87,12 @@ plot(las_dalponte, color="treeID")
 #4b
 
 las_li<-segment_trees(nlasb, li2012())
-plot(las)
+plot(las_li, color="treeID")
 
 #4c
 my_silva<-silva2016(chmc, ttops)
 las_silva <- segment_trees(nlasb, algorithm = my_silva)
-plot(las_silva)
+plot(las_silva, color="treeID")
 ```
 
 4d. The silva algorithm segments trees based on seed and voronoi tesselation. Meaning the tree tops act as seeds for a region. The outline for each region is equidistance to the two nearest seeds.
